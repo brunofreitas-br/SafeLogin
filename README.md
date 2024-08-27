@@ -11,6 +11,9 @@
 - **Logging and Monitoring**: The solution logs detected phishing attempts, enabling continuous monitoring and incident response.
 - **Azure Integration**: Utilizes Azure Functions and Blob Storage for a scalable and easy-to-manage solution.
 
+- ![image](https://github.com/user-attachments/assets/6e99b52d-563a-4d85-addd-57ddf8bae8e0)
+
+
 ## Solution Architecture
 
 The solution architecture consists of the following components:
@@ -30,7 +33,7 @@ The solution architecture consists of the following components:
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/your-username/your-repository.git
+   git clone [https://github.com/brunofreitas-br/SafeLogin.git]
    cd your-repository
    ```
 
@@ -42,9 +45,12 @@ The solution architecture consists of the following components:
      requests
      ```
    - This ensures that the necessary libraries are installed for the function to run correctly.
+   - Copy the Python code from `SafeLogin-EntraID.py` in this repository and paste it into the `function_app.py` file that is generated when the Function is created in Visual Studio Code.
+   - Update the script with the URL of your phishing alert image.
 
 3. **Customize the Entra ID Login Page**
    - Upload the custom CSS file to your Entra ID instance.
+   - Before uploading the CSS file, make sure to update it with the URL of the Azure Function generated during setup.
    - The login page will automatically update to integrate the SafeLogin solution.
 
 4. **Testing and Monitoring**
