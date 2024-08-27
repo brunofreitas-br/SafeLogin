@@ -11,8 +11,7 @@
 - **Logging and Monitoring**: The solution logs detected phishing attempts, enabling continuous monitoring and incident response.
 - **Azure Integration**: Utilizes Azure Functions and Blob Storage for a scalable and easy-to-manage solution.
 
-![image](https://github.com/user-attachments/assets/6e99b52d-563a-4d85-addd-57ddf8bae8e0)
-
+![image](https://github.com/user-attachments/assets/9bc30086-2560-4284-a0e4-f29db528b55d)
 
 ## Solution Architecture
 
