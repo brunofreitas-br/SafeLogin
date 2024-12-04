@@ -1,0 +1,90 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspace": {
+            "type": "String"
+        }
+    },
+    "resources": [
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/50474910-7d93-4807-96d7-d24ae224945f')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/50474910-7d93-4807-96d7-d24ae224945f')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "SafeLogin - Potentially Compromised Users - Phishing Link Accessed",
+                "description": "This analytic rule identifies users who have accessed a phishing link detected by the SafeLogin system. While these users have not proceeded with login attempts, their engagement with the phishing link suggests a potential security risk. This rule helps to proactively monitor and flag users who may be vulnerable to phishing attacks, enabling further investigation and targeted security awareness actions.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "// Define the analysis period and ensure the IP is treated as a string\r\nlet SafeLoginEvents = SafeLoginDetections_CL\r\n| where ThreatType_s == \"Phishing Attempt - Suspicious URL\"\r\n| where TimeGenerated >= ago(10m)  // Considers ingestion events from the last 10 minutes\r\n| extend ClientIP_Only = tostring(split(ClientIP_s, \":\")[0])  // Removes the port from the IP and converts to string\r\n| project SafeLoginEventTime = TimeGenerated, ClientIP_Only, SuspectURL = SuspectURL_s, ThreatType = ThreatType_s;\r\n\r\nlet SignInEvents = SigninLogs\r\n| where TimeGenerated >= ago(7d)  // Checks for recent ingestion events\r\n| where ResultType == \"0\"  // Filters successful logins\r\n| extend IPAddress_String = tostring(IPAddress)  // Ensures IPAddress is treated as a string\r\n| project SignInEventTime = TimeGenerated, UserPrincipalName, UserId, IPAddress_String;\r\n\r\nSafeLoginEvents\r\n| join kind=inner (SignInEvents) on $left.ClientIP_Only == $right.IPAddress_String\r\n| summarize UserPrincipalNames = make_set(UserPrincipalName), UserIds = make_set(UserId) by SafeLoginEventTime, ClientIP_Only, SuspectURL, ThreatType\r\n| mv-expand UserPrincipalNames, UserIds  // Expands each value into a separate row\r\n| summarize UserPrincipalName = strcat_array(make_list(UserPrincipalNames), \", \"), UserId = strcat_array(make_list(UserIds), \", \") by SafeLoginEventTime, ClientIP_Only, SuspectURL, ThreatType\r\n| project SafeLoginEventTime, ClientIP = ClientIP_Only, SuspectURL, ThreatType, UserPrincipalName, UserId\r\n| order by SafeLoginEventTime desc",
+                "queryFrequency": "PT10M",
+                "queryPeriod": "PT10M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "InitialAccess"
+                ],
+                "techniques": [
+                    "T1566"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT10M",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": {
+                    "alertDynamicProperties": []
+                },
+                "customDetails": {},
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "AadUserId",
+                                "columnName": "UserId"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "ClientIP"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "URL",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Url",
+                                "columnName": "SuspectURL"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        }
+    ]
+}

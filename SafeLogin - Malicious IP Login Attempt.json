@@ -1,0 +1,88 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspace": {
+            "type": "String"
+        }
+    },
+    "resources": [
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/17d3ec00-18c0-4260-8b1f-18c04801f77a')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/17d3ec00-18c0-4260-8b1f-18c04801f77a')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "SafeLogin - Compromised User Detected - Malicious IP Login Attempt",
+                "description": "This analytic rule identifies potentially compromised user accounts that have logged in using a known malicious IP address. By leveraging the SafeLogin detection system, this rule cross-references phishing detections with successful login attempts from suspicious IPs. It highlights users who may have disregarded phishing warnings, helping security teams to quickly detect and respond to potential account takeovers.\n\nPurpose:\nTo detect and flag user accounts that have proceeded with login attempts from IP addresses identified as malicious. This rule aids in uncovering compromised accounts and supports rapid response efforts to mitigate security risks.",
+                "severity": "High",
+                "enabled": true,
+                "query": "// Define the analysis period and ensure the IP is treated as a string\r\nlet SafeLoginEvents = SafeLoginDetections_CL\r\n| where ThreatType_s == \"Phishing Attempt - Suspicious URL\"\r\n| project SafeLoginEventTime = TimeGenerated, LoginIP = tostring(MaliciousIP_s), SuspectURL = SuspectURL_s, ThreatType = ThreatType_s;\r\n\r\nlet SignInEvents = SigninLogs\r\n| where TimeGenerated >= ago(10m)\r\n| where ResultType == \"0\"  // Filters successful logins, adjust as needed for success status\r\n| extend IPAddress_String = tostring(IPAddress)   // Ensures IPAddress is treated as a string\r\n| project SignInEventTime = TimeGenerated, UserPrincipalName, UserId, IPAddress_String;\r\n\r\n// Perform a join by checking both the client IP and the malicious proxy IP\r\nSafeLoginEvents\r\n| join kind=inner (SignInEvents) on $left.LoginIP == $right.IPAddress_String\r\n| extend TimeDifference = abs(datetime_diff('second', SafeLoginEventTime, SignInEventTime))\r\n| sort by TimeDifference asc  // Sorts by temporal proximity\r\n| summarize arg_min(TimeDifference, *) by SafeLoginEventTime, LoginIP, SuspectURL, ThreatType\r\n| project SafeLoginEventTime, LoginIP, SuspectURL, ThreatType, UserPrincipalName, UserId\r\n| order by SafeLoginEventTime desc",
+                "queryFrequency": "PT10M",
+                "queryPeriod": "PT10M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "InitialAccess"
+                ],
+                "techniques": [
+                    "T1566"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5M",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "AadUserId",
+                                "columnName": "UserId"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "LoginIP"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "URL",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Url",
+                                "columnName": "SuspectURL"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        }
+    ]
+}
