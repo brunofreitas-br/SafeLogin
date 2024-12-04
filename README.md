@@ -51,7 +51,7 @@ The solution architecture consists of the following components:
      requests
      datetime
      ```
-   - This ensures that the necessary libraries are installed for the function to run correctly.
+     This ensures that the necessary libraries are installed for the function to run correctly.
    - Copy the Python code from `SafeLogin-EntraID.py` in this repository and paste it into the `function_app.py` file that is generated when the Function is created in Visual Studio Code.
   
 4. **Configure Environment Variables in the Azure Function**
