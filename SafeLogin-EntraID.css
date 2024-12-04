@@ -2,9 +2,10 @@
     position: relative;
     padding: 20px;
     background: white url("Your-Function-URL") center no-repeat; /* Add Your Azure Function URL Here*/
-    min-height: 300px; /
+    min-height: 300px; /* Set a minimum height to ensure the error message is visible */
 }
 
+/* Optional adjustment to ensure the image scales correctly */
 .ext-sign-in-box {
     background-size: contain;
     background-repeat: no-repeat;
