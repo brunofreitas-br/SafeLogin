@@ -45,7 +45,7 @@ The solution architecture consists of the following components:
    
 3. **Set Up the Azure Function**
 
-   - The Azure Function should be created using Visual Studio Code to allow for easy manipulation of the `requirements.txt` file.
+   - The Azure Function should be created using Visual Studio Code (with the Azure Functions extension) to allow for easy manipulation of the `requirements.txt` file.
    - After setting up the function, make sure to add the following dependency to the `requirements.txt` file:
      ```plaintext
      requests
