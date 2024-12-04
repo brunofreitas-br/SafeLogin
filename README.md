@@ -10,7 +10,7 @@
 - **Visual Notification**: When a phishing attempt is detected, the solution displays an alert banner on the custom Entra ID login page, warning the user of the threat.
 - **Logging and Monitoring**: The solution logs detected phishing attempts, enabling continuous monitoring and incident response.
 - **Azure Integration**: Utilizes Azure Functions and Blob Storage for a scalable and easy-to-manage solution.
-- - **Integration with Microsoft Sentinel**: SafeLogin 2.0 introduces integration with Microsoft Sentinel, sending alerts to a specified Log Analytics Workspace.
+   - **Integration with Microsoft Sentinel**: SafeLogin 2.0 introduces integration with Microsoft Sentinel, sending alerts to a specified Log Analytics Workspace.
 
 ![safelogin-cybergeeks-banner](https://github.com/user-attachments/assets/6ca72a71-02cd-41f4-9789-f74ef3a22ba2)
 
